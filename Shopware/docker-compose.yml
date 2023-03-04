@@ -1,0 +1,56 @@
+version: "3"
+
+services:
+
+### Application Services ###
+  shopware-development:
+    # See: https://dockware.io/getstarted
+    image: dockware/dev:${SHOPWARE_VERSION}
+    restart: unless-stopped
+    container_name: ${STACK_NAME}_SERVER
+    environment:
+      # See: https://hub.docker.com/r/dockware/dev
+      - TZ=${TIME_ZONE}
+      - XDEBUG_ENABLED=1
+      - DEBUG_REMOTE_HOST=${DEBUG_REMOTE_HOST}
+      - SW_TASKS_ENABLED=1
+      #- SW_API_ACCESS_KEY=MGaJHGV9PcnXHWca2Rk0NaG5I8v0QIdQ7J5MyS6H
+      #- SW_CURRENCY=EUR
+      #- DOCKWARE_CI=0
+      #- BUILD_PLUGIN=XXX
+    ports:          
+      - "${PORT_SSH}:22"                      # ssh
+      - "${PORT_HTTP}:80"                     # apache2
+      - "${PORT_HTTPS}:443"                   # apache2 https
+      - "${PORT_WATCHADMIN}:8888"             # watch admin
+      - "${PORT_WATCHSTOREFRONTPROXY}:9998"   # watch storefront proxy
+      - "${PORT_WATCHSTOREFRONT}:9999"        # watch storefront
+      - "${PORT_MYSQL}:3306"                  # mysql port      
+    volumes:
+      - "shopware-development:/var/www/html"
+      #- "${WEBROOT}:/var/www/html"
+    networks:
+      local:
+
+volumes:
+  shopware-development:
+    driver: local    
+    name: ${STACK_NAME}-data
+
+networks:
+  local:
+    driver: bridge
+    name: ${STACK_NAME}
+    #enable_ipv6: true    
+    #driver_opts:
+    #  com.docker.network.enable_ipv6: "true"    
+    #ipam:
+    # config:
+    #  - subnet: 10.254.${PRIVATESUBNET}.0/24
+    #    gateway: 10.254.${PRIVATESUBNET}.1
+    #  - subnet: fdfd:10:254:${PRIVATESUBNET}::/64
+    #    gateway: fdfd:10:254:${PRIVATESUBNET}::1
+
+# See Config = docker compose --env-file ../Shared/.env config
+# Run Image = docker compose --env-file ../Shared/.env up
+# Stop Image = docker compose --env-file ../Shared/.env down
